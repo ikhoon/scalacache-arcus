@@ -1,14 +1,15 @@
 package scalacache.arcus
 
 import net.spy.memcached._
-import org.scalatest.concurrent.{ Eventually, IntegrationPatience, ScalaFutures }
-import org.scalatest.time.{ Seconds, Span }
-import org.scalatest.{ BeforeAndAfter, FlatSpec, Matchers }
+import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
+import org.scalatest.time.{Seconds, Span}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scalacache.common.LegacyCodecCheckSupport
 import scalacache.serialization.Codec
+import scalacache.serialization.circe._
 
 class ArcusCacheSpec
     extends FlatSpec
@@ -30,7 +31,7 @@ class ArcusCacheSpec
     } catch { case _: Exception => false }
   }
 
-  def serialise[A](v: A)(implicit codec: Codec[A, Array[Byte]]): Array[Byte] = codec.serialize(v)
+  def serialise[V](v: V)(implicit codec: Codec[V]): Array[Byte] = codec.encode(v)
 
   if (!memcachedIsRunning) {
     alert("Skipping tests because Memcached does not appear to be running on localhost.")

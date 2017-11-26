@@ -1,10 +1,10 @@
 import sbtrelease.ReleaseStateTransformations._
 
 import scala.language.postfixOps
-import scalariform.formatter.preferences._
-
 
 val ScalaVersion = "2.11.8"
+
+scalafmtOnCompile in ThisBuild := true
 
 lazy val `scalacache-arcus` = Project(id = "scalacache-arcus", base = file("."))
   .settings(commonSettings: _*)
@@ -16,8 +16,9 @@ lazy val `scalacache-arcus` = Project(id = "scalacache-arcus", base = file("."))
   )
 
 lazy val scalacache = Seq(
-  "com.github.cb372" %% "scalacache-core" % "0.9.3",
-  "com.github.cb372" %% "scalacache-caffeine" % "0.9.3" % Test
+  "com.github.cb372" %% "scalacache-core" % "0.21.0",
+  "com.github.cb372" %% "scalacache-circe" % "0.21.0",
+  "com.github.cb372" %% "scalacache-caffeine" % "0.21.0" % Test
 )
 
 lazy val arcus = Seq(
@@ -28,10 +29,10 @@ lazy val arcus = Seq(
 )
 
 lazy val scalaTest = Seq(
-  "org.scalatest" %% "scalatest" % "3.0.0" % Test
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test
 )
 lazy val slf4j = Seq(
-  "org.slf4j" % "slf4j-api" % "1.7.21"
+  "org.slf4j" % "slf4j-api" % "1.7.25"
 )
 
 // Dependencies common to all projects
@@ -44,12 +45,9 @@ lazy val commonDeps =
 lazy val commonSettings =
   Defaults.coreDefaultSettings ++
   mavenSettings ++
-  scalariformSettings ++
-  formatterPrefs ++
   Seq(
     organization := "com.github.ikhoon",
-    scalaVersion := ScalaVersion,
-    crossScalaVersions := Seq(ScalaVersion, "2.12.0"),
+    crossScalaVersions := Seq("2.11.9", "2.12.3"),
     scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
     resolvers += Resolver.typesafeRepo("releases"),
     libraryDependencies ++= commonDeps,
@@ -62,7 +60,6 @@ lazy val commonSettings =
       runTest,
       setReleaseVersion,
       commitReleaseVersion,
-      updateVersionInReadme,
       tagRelease,
       publishArtifacts,
       setNextVersion,
@@ -70,7 +67,7 @@ lazy val commonSettings =
 //      releaseStepCommand("sonatypeReleaseAll"),
       pushChanges
     ),
-    commands += Command.command("update-version-in-readme")(updateVersionInReadme)
+//    commands += Command.command("update-version-in-readme")(updateVersionInReadme)
   )
 
 lazy val implProjectSettings = commonSettings
@@ -107,25 +104,6 @@ lazy val mavenSettings = Seq(
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false }
 )
-
-// Scalariform preferences
-lazy val formatterPrefs = Seq(
-  ScalariformKeys.preferences := ScalariformKeys.preferences.value
-    .setPreference(AlignParameters, true)
-    .setPreference(DoubleIndentClassDeclaration, true)
-)
-
-lazy val updateVersionInReadme = ReleaseStep(action = st => {
-  val extracted = Project.extract(st)
-  val projectVersion = extracted.get(Keys.version)
-
-  println(s"Updating project version to $projectVersion in the README")
-  Process(Seq("sed", "-i", "", "-E", "-e", s"""s/"scalacache-(.*)" % ".*"/"scalacache-\\1" % "$projectVersion"/g""", "README.md")).!
-  println("Committing README.md")
-  Process(Seq("git", "commit", "README.md", "-m", s"Update project version in README to $projectVersion")).!
-
-  st
-})
 
 def scala211OnlyDeps(moduleIDs: ModuleID*) =
   libraryDependencies ++= (scalaBinaryVersion.value match {
