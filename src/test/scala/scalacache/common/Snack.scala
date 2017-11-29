@@ -1,10 +1,13 @@
 package scalacache.common
 
-import org.scalatest.concurrent.{ IntegrationPatience, ScalaFutures }
-import org.scalatest.{ Matchers, FlatSpec }
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.{FlatSpec, Matchers}
 
+import scala.concurrent.Future
 import scalacache._
 import scalacache.serialization.Codec
+import scalacache.serialization.Codec.DecodingResult
+import scalacache.serialization.circe._
 
 object Snack {
   val Jagabee: Snack = Snack("Jagabee")
@@ -12,17 +15,20 @@ object Snack {
 
 case class Snack(name: String)
 
-class DummySnackCodec extends Codec[Snack, Array[Byte]] {
+class DummySnackCodec extends Codec[Snack] {
   var serialiserUsed = false
   var deserialiserUsed = false
-  def serialize(value: Snack): Array[Byte] = {
+
+  override def encode(value: Snack): Array[Byte] = {
     serialiserUsed = true
     Array.empty
   }
-  def deserialize(data: Array[Byte]): Snack = {
+
+  override def decode(bytes: Array[Byte]): DecodingResult[Snack] = {
     deserialiserUsed = true
-    Snack.Jagabee
+    Right(Snack.Jagabee)
   }
+
 }
 
 trait LegacyCodecCheckSupport { this: FlatSpec with Matchers with ScalaFutures with IntegrationPatience =>
@@ -34,16 +40,18 @@ trait LegacyCodecCheckSupport { this: FlatSpec with Matchers with ScalaFutures w
    * @param buildCache function that takes a boolean indicating whether not the cache returned should make use of
    *                   in-scope Codecs
    */
-  def legacySupportCheck(buildCache: Boolean => Cache[Array[Byte]]): Unit = {
+  def legacySupportCheck(buildCache: (Boolean, Codec[Snack]) => Cache[Snack]): Unit = {
 
     behavior of "useLegacySerialization"
 
+    import scalacache.modes.scalaFuture._
+    import scala.concurrent.ExecutionContext.Implicits.global
     it should "use the in-scope Codec if useLegacySerialization is false" in {
-      implicit val codec = new DummySnackCodec
-      val cache = buildCache(false)
-      whenReady(cache.put("snack", Snack.Jagabee, None)) { _ =>
+      val codec = new DummySnackCodec
+      implicit val cache = buildCache(false, codec)
+      whenReady(cache.put[Future]("snack")(Snack.Jagabee, None)) { _ =>
         codec.serialiserUsed shouldBe true
-        whenReady(cache.get[Snack]("snack")) { _ =>
+        whenReady(cache.get[Future]("snack")) { _ =>
           codec.deserialiserUsed shouldBe true
         }
       }
@@ -51,10 +59,10 @@ trait LegacyCodecCheckSupport { this: FlatSpec with Matchers with ScalaFutures w
 
     it should "use not the in-scope Codec if useLegacySerialization is true" in {
       implicit val codec = new DummySnackCodec
-      val cache = buildCache(true)
-      whenReady(cache.put("snack", Snack.Jagabee, None)) { _ =>
+      val cache = buildCache(true, codec)
+      whenReady(cache.put("snack")(Snack.Jagabee, None)) { _ =>
         codec.serialiserUsed shouldBe false
-        whenReady(cache.get[Snack]("snack")) { _ =>
+        whenReady(cache.get("snack")) { _ =>
           codec.deserialiserUsed shouldBe false
         }
       }

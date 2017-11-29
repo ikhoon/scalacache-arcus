@@ -9,6 +9,9 @@ import scalacache.common.LegacyCodecCheckSupport
 import scalacache.serialization.Codec
 import scalacache._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scalacache.serialization.binary._
+import scalacache.modes.scalaFuture._
+import scala.concurrent.duration._
 
 /**
   * Created by ikhoon on 19/11/2017.
@@ -26,7 +29,7 @@ class ScalaCacheArcusSpec
     val host = sys.env("ARCUS_ADMIN_HOST")
     val client = ArcusClientFactory(serviceCode, host)
 
-    implicit val arcusCache = ScalaCache(ArcusCache(client))
+  implicit val arcusCache: Cache[Int] = ArcusCache(client)
 
     def memcachedIsRunning = {
       try {
@@ -35,7 +38,7 @@ class ScalaCacheArcusSpec
       } catch { case _: Exception => false }
     }
 
-    def serialise[A](v: A)(implicit codec: Codec[A, Array[Byte]]): Array[Byte] = codec.serialize(v)
+    def serialise[A](v: A)(implicit codec: Codec[A]): Array[Byte] = codec.encode(v)
 
     if (!memcachedIsRunning) {
       alert("Skipping tests because Memcached does not appear to be running on localhost.")
@@ -49,14 +52,14 @@ class ScalaCacheArcusSpec
 
       it should "return the value stored in Memcached" in {
         Await.result(remove("key1"), Duration.Inf)
-        val eventualInt1 = caching("key1") {
+        val eventualInt1 = cachingF("key1")(ttl = Some(3.seconds)) {
           Future {
             println("sleep 1" + Thread.currentThread())
             Thread.sleep(2000)
             0
           }
         }
-        val eventualInt2 = caching("key1") {
+        val eventualInt2: Future[Int] = cachingF("key1")(None) {
           Future {
             println("sleep 2" + Thread.currentThread())
             Thread.sleep(2000)

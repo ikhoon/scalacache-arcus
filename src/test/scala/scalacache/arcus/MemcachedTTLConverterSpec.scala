@@ -1,8 +1,11 @@
 package scalacache.arcus
 
-import org.scalatest.{ BeforeAndAfter, Matchers, FlatSpec }
+import java.time.temporal.ChronoUnit
+import java.time.{Clock, Instant, ZoneOffset}
+
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
 import scala.concurrent.duration._
-import org.joda.time.{ DateTimeZone, DateTime, DateTimeUtils }
 
 class MemcachedTTLConverterSpec extends FlatSpec with Matchers with BeforeAndAfter with MemcachedTTLConverter {
   behavior of "MemcachedTTLConverter"
@@ -32,13 +35,9 @@ class MemcachedTTLConverterSpec extends FlatSpec with Matchers with BeforeAndAft
   }
 
   it should "convert a duration longer than 30 days to the expiry time expressed as UNIX epoch seconds" in {
-    val now = DateTime.now(DateTimeZone.UTC)
-    DateTimeUtils.setCurrentMillisFixed(now.getMillis)
-    toMemcachedExpiry(Some(31.days)) should be(now.plusDays(31).getMillis / 1000)
-  }
-
-  after {
-    DateTimeUtils.setCurrentMillisSystem()
+    val now = Instant.now
+    val clock = Clock.fixed(now, ZoneOffset.UTC)
+    toMemcachedExpiry(Some(31.days))(clock) should be(now.plus(31, ChronoUnit.DAYS).toEpochMilli / 1000)
   }
 
 }

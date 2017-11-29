@@ -10,7 +10,8 @@ Arcus를 [scalacache](https://github.com/cb372/scalacache)의 다양한 API를 �
 
 ## 앞으로 할일
 
-* sonartype repo에 등록하기 
+* ~sonartype repo에 등록하기~
+* travis에 arcus unit test설정
 * example code 넣기
 * scala cross version build
 * arcus factory with typesafe config
