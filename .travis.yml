@@ -6,7 +6,11 @@ scala:
 jdk:
   - oraclejdk8
 services:
-  - memcached
+  - docker
+before_install:
+  - docker pull ruo91/arcus
+  - docker run -d --name="arcus-admin" -h "arcus" arcus-admin
+  - docker run -d --name="arcus-memcached-1" -h "memcached-1" arcus-memcached
 script:
   - sbt +test
 cache:
