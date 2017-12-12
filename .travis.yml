@@ -9,7 +9,7 @@ services:
   - docker
 before_install:
   - docker pull ikhoon/arcus-dockerfile
-  - docker run -d -p 2181:2181 -p 11211:11211 -p 11212:11212 ikhoon/arcus-dockerfile
+  - docker run -d -p 2181:2181 -p 11212:11212 -p 11213:11213 ikhoon/arcus-dockerfile
 script:
   - sbt +test
 cache:
