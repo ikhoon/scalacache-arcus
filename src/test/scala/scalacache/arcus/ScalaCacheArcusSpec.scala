@@ -25,8 +25,8 @@ class ScalaCacheArcusSpec
   with IntegrationPatience
   with LegacyCodecCheckSupport {
 
-    val serviceCode = sys.env("ARCUS_SERVICE_CODE")
-    val host = sys.env("ARCUS_ADMIN_HOST")
+    val serviceCode = "test"
+    val host = "localhost:2181"
     val client = ArcusClientFactory(serviceCode, host)
 
   implicit val arcusCache: Cache[Int] = ArcusCache(client)
