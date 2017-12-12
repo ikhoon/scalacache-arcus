@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Promise}
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 import scalacache.serialization.Codec
 import scalacache._
@@ -20,13 +20,9 @@ import scalacache._
   */
 class ArcusCache[V](client: MemcachedClient,
                     keySanitizer: MemcachedKeySanitizer = ReplaceAndTruncateSanitizer(),
-                    useLegacySerialization: Boolean = false
-                   )(
-  implicit val config: CacheConfig,
-  codec: Codec[V])
-  extends AbstractCache[V]
-  with MemcachedTTLConverter {
-
+                    useLegacySerialization: Boolean = false)(implicit val config: CacheConfig, codec: Codec[V])
+    extends AbstractCache[V]
+    with MemcachedTTLConverter {
 
   override protected final val logger = LoggerFactory.getLogger(getClass.getName)
 
@@ -36,11 +32,12 @@ class ArcusCache[V](client: MemcachedClient,
       try {
         val bytes = f.get()
         val value = {
-          if(bytes != null) {
-            if (useLegacySerialization) Try(bytes.asInstanceOf[V]).toEither.map(Some(_))
-            else codec.decode(bytes.asInstanceOf[Array[Byte]]).right.map(Some(_))
-          }
-          else Right(None)
+          if (bytes != null) {
+            if (useLegacySerialization) Try(bytes.asInstanceOf[V]) match {
+              case Success(v)  => Right(Some(v))
+              case Failure(ex) => Left(ex)
+            } else codec.decode(bytes.asInstanceOf[Array[Byte]]).right.map(Some(_))
+          } else Right(None)
         }
         cb(value)
       } catch {
@@ -49,16 +46,16 @@ class ArcusCache[V](client: MemcachedClient,
     }
   }
 
-
   override protected def doPut[F[_]](key: String, value: V, ttl: Option[Duration])(implicit mode: Mode[F]): F[Any] = {
     mode.M.async { cb =>
-      val valueToSend = if(useLegacySerialization) value else codec.encode(value)
+      val valueToSend = if (useLegacySerialization) value else codec.encode(value)
       val f = client.set(keySanitizer.toValidMemcachedKey(key), toMemcachedExpiry(ttl), valueToSend)
       f.get
       logCachePut(key, ttl)
       cb(Right(()))
     }
   }
+
   /**
     * Remove the given key and its associated value from the cache, if it exists.
     * If the key is not in the cache, do nothing.
@@ -83,7 +80,6 @@ class ArcusCache[V](client: MemcachedClient,
 
   override def close[F[_]]()(implicit mode: Mode[F]): F[Any] = mode.M.delay(client.shutdown())
 
-
 }
 
 object ArcusCache {
@@ -93,7 +89,8 @@ object ArcusCache {
     * @param serviceCode arcus cluster servcie code e.g.
     * @param address arcus admin string, with addresses separated by spaces, e.g. "localhost:2181"
     */
-  def apply[V](serviceCode: String, address: String, useLegacySerialization: Boolean)(implicit config: CacheConfig, codec: Codec[V]): ArcusCache[V] =
+  def apply[V](serviceCode: String, address: String, useLegacySerialization: Boolean)(implicit config: CacheConfig,
+                                                                                      codec: Codec[V]): ArcusCache[V] =
     apply(ArcusClientFactory(serviceCode, address), useLegacySerialization)
 
   /**
@@ -101,7 +98,8 @@ object ArcusCache {
     *
     * @param client Arcus client
     */
-  def apply[V](client: MemcachedClient, useLegacySerialization: Boolean = false)(implicit config: CacheConfig, codec: Codec[V]): ArcusCache[V] =
+  def apply[V](client: MemcachedClient, useLegacySerialization: Boolean = false)(implicit config: CacheConfig,
+                                                                                 codec: Codec[V]): ArcusCache[V] =
     new ArcusCache[V](client)
 
 }

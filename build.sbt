@@ -22,7 +22,7 @@ lazy val scalacache = Seq(
 )
 
 lazy val arcus = Seq(
-  "com.navercorp.arcus" % "arcus-java-client" % "1.9.7" excludeAll(
+  "com.navercorp.arcus" % "arcus-java-client" % "1.9.7" excludeAll (
     ExclusionRule(organization = "org.slf4j", name = "slf4j-log4j12"),
     ExclusionRule(organization = "log4j", name = "log4j")
   )
@@ -38,37 +38,49 @@ lazy val slf4j = Seq(
 // Dependencies common to all projects
 lazy val commonDeps =
   scalacache ++
-  arcus ++
-  slf4j ++
-  scalaTest
+    arcus ++
+    slf4j ++
+    scalaTest
 
 lazy val commonSettings =
   Defaults.coreDefaultSettings ++
-  mavenSettings ++
-  Seq(
-    organization := "com.github.ikhoon",
-    crossScalaVersions := Seq("2.11.9", "2.12.3"),
-    scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature"),
-    resolvers += Resolver.typesafeRepo("releases"),
-    libraryDependencies ++= commonDeps,
-    parallelExecution in Test := false,
-    releaseCrossBuild := true,
-    releaseProcess := Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      inquireVersions,
-      runClean,
-      runTest,
-      setReleaseVersion,
-      commitReleaseVersion,
-      tagRelease,
-      publishArtifacts,
-      setNextVersion,
-      commitNextVersion,
+    mavenSettings ++
+    Seq(
+      organization := "com.github.ikhoon",
+      crossScalaVersions := Seq("2.11.9", "2.12.3"),
+      scalacOptions ++= Seq(
+//      "-Xfatal-warnings",
+        "-deprecation",
+        "-encoding",
+        "UTF-8",
+        "-feature",
+        "-language:implicitConversions",
+        "-language:postfixOps",
+        "-language:higherKinds",
+        "-language:existentials",
+        "-target:jvm-1.8",
+        "-Xfuture"
+      ),
+      resolvers += Resolver.typesafeRepo("releases"),
+      libraryDependencies ++= commonDeps,
+      parallelExecution in Test := false,
+      releaseCrossBuild := true,
+      releaseProcess := Seq[ReleaseStep](
+        checkSnapshotDependencies,
+        inquireVersions,
+        runClean,
+        runTest,
+        setReleaseVersion,
+        commitReleaseVersion,
+        tagRelease,
+        publishArtifacts,
+        setNextVersion,
+        commitNextVersion,
 //      releaseStepCommand("sonatypeReleaseAll"),
-      pushChanges
-    ),
+        pushChanges
+      )
 //    commands += Command.command("update-version-in-readme")(updateVersionInReadme)
-  )
+    )
 
 lazy val implProjectSettings = commonSettings
 
@@ -98,15 +110,17 @@ lazy val mavenSettings = Seq(
     if (isSnapshot.value)
       Some("snapshots" at nexus + "some-snapshot")
     else
-      Some("releases"  at nexus + "some-release")
+      Some("releases" at nexus + "some-release")
   },
   publishMavenStyle := true,
   publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false }
+  pomIncludeRepository := { _ =>
+    false
+  }
 )
 
 def scala211OnlyDeps(moduleIDs: ModuleID*) =
   libraryDependencies ++= (scalaBinaryVersion.value match {
     case "2.11" => moduleIDs
-    case other => Nil
+    case other  => Nil
   })
