@@ -1,9 +1,9 @@
 package scalacache.arcus
 
-import org.scalatest.concurrent.{ IntegrationPatience, ScalaFutures }
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scalacache._
 
 class ReplaceAndTruncateSanitizerSpec extends FlatSpec with Matchers {

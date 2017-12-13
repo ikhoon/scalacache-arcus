@@ -34,12 +34,12 @@ class DummySnackCodec extends Codec[Snack] {
 trait LegacyCodecCheckSupport { this: FlatSpec with Matchers with ScalaFutures with IntegrationPatience =>
 
   /**
-   * Given a function that returns a [[Cache]] based on whether or not Codec-based serialisation should be skipped,
-   * performs a basic check to verify usage/non-usage of in-scope Codecs.
-   *
-   * @param buildCache function that takes a boolean indicating whether not the cache returned should make use of
-   *                   in-scope Codecs
-   */
+    * Given a function that returns a [[Cache]] based on whether or not Codec-based serialisation should be skipped,
+    * performs a basic check to verify usage/non-usage of in-scope Codecs.
+    *
+    * @param buildCache function that takes a boolean indicating whether not the cache returned should make use of
+    *                   in-scope Codecs
+    */
   def legacySupportCheck(buildCache: (Boolean, Codec[Snack]) => Cache[Snack]): Unit = {
 
     behavior of "useLegacySerialization"

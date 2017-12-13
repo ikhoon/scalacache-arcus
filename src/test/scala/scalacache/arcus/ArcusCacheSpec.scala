@@ -14,7 +14,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scalacache.CacheConfig
 import scalacache.modes.scalaFuture._
 
-
 class ArcusCacheSpec
     extends FlatSpec
     with Matchers
@@ -90,12 +89,11 @@ class ArcusCacheSpec
 
     import scalacache.serialization.binary._
     legacySupportCheck { (legacySerialization, codec) =>
-      new ArcusCache[Snack](
-        client = client, useLegacySerialization = legacySerialization)(
-        CacheConfig.defaultCacheConfig, codec
+      new ArcusCache[Snack](client = client, useLegacySerialization = legacySerialization)(
+        CacheConfig.defaultCacheConfig,
+        codec
       )
     }
   }
 
 }
-

@@ -2,8 +2,6 @@ import sbtrelease.ReleaseStateTransformations._
 
 import scala.language.postfixOps
 
-val ScalaVersion = "2.11.8"
-
 scalafmtOnCompile in ThisBuild := true
 
 lazy val `scalacache-arcus` = Project(id = "scalacache-arcus", base = file("."))
@@ -46,8 +44,9 @@ lazy val commonSettings =
   Defaults.coreDefaultSettings ++
     mavenSettings ++
     Seq(
+      scalaVersion := "2.12.4",
       organization := "com.github.ikhoon",
-      crossScalaVersions := Seq("2.11.9", "2.12.3"),
+      crossScalaVersions := Seq("2.11.11", "2.12.4"),
       scalacOptions ++= Seq(
 //      "-Xfatal-warnings",
         "-deprecation",
@@ -64,6 +63,7 @@ lazy val commonSettings =
       resolvers += Resolver.typesafeRepo("releases"),
       libraryDependencies ++= commonDeps,
       parallelExecution in Test := false,
+      releasePublishArtifactsAction := PgpKeys.publishSigned.value,
       releaseCrossBuild := true,
       releaseProcess := Seq[ReleaseStep](
         checkSnapshotDependencies,
@@ -73,10 +73,11 @@ lazy val commonSettings =
         setReleaseVersion,
         commitReleaseVersion,
         tagRelease,
+//        releaseStepCommand("publishSigned"),
         publishArtifacts,
         setNextVersion,
         commitNextVersion,
-//      releaseStepCommand("sonatypeReleaseAll"),
+        releaseStepCommand("sonatypeReleaseAll"),
         pushChanges
       )
 //    commands += Command.command("update-version-in-readme")(updateVersionInReadme)
@@ -106,11 +107,11 @@ lazy val mavenSettings = Seq(
       </developer>
     </developers>,
   publishTo := {
-    val nexus = "TODO-make-a-repo"
+    val nexus = "https://oss.sonatype.org/"
     if (isSnapshot.value)
-      Some("snapshots" at nexus + "some-snapshot")
+      Some("snapshots" at nexus + "content/repositories/snapshots")
     else
-      Some("releases" at nexus + "some-release")
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
   },
   publishMavenStyle := true,
   publishArtifact in Test := false,
