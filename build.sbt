@@ -14,9 +14,9 @@ lazy val `scalacache-arcus` = Project(id = "scalacache-arcus", base = file("."))
   )
 
 lazy val scalacache = Seq(
-  "com.github.cb372" %% "scalacache-core" % "0.21.0",
-  "com.github.cb372" %% "scalacache-circe" % "0.21.0",
-  "com.github.cb372" %% "scalacache-caffeine" % "0.21.0" % Test
+  "com.github.cb372" %% "scalacache-core" % "0.23.0",
+  "com.github.cb372" %% "scalacache-circe" % "0.23.0",
+  "com.github.cb372" %% "scalacache-caffeine" % "0.23.0" % Test
 )
 
 lazy val arcus = Seq(

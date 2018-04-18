@@ -1,5 +1,12 @@
 # ScalaCache for Naver Arcus
 
+## 
+```scala
+libraryDependencies += "com.github.ikhoon" %% "scalacache-arcus" % "lastest.version"
+
+```
+
+
 ## 왜 만들었나?
 [ScalaCache](https://github.com/cb372/scalacache)는 redis, guava, caffeine, memcached cache api를 동일한 interface에서 사용할수 있게 제공해주는 미들웨어이다.
 
@@ -11,8 +18,8 @@ Arcus를 [scalacache](https://github.com/cb372/scalacache)의 다양한 API를 �
 ## 앞으로 할일
 
 * ~sonartype repo에 등록하기~
-* travis에 arcus unit test설정
-* example code 넣기
-* scala cross version build
+* ~travis에 arcus unit test설정~
+* ~example code 넣기~
+* ~scala cross version build~
 * arcus factory with typesafe config
 
