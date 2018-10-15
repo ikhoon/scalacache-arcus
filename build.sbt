@@ -4,33 +4,40 @@ import scala.language.postfixOps
 
 scalafmtOnCompile in ThisBuild := true
 
+lazy val versions = new {
+  val arcus = "1.9.7"
+  val scalacache = "0.24.3"
+  val logback = "1.1.6"
+  val slf4j = "1.7.25"
+  val scalatest = "3.0.4"
+}
 lazy val `scalacache-arcus` = Project(id = "scalacache-arcus", base = file("."))
   .settings(commonSettings: _*)
 //  .settings(sonatypeSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "ch.qos.logback" % "logback-classic" % "1.1.6" % Test
+      "ch.qos.logback" % "logback-classic" % versions.logback % Test
     )
   )
 
 lazy val scalacache = Seq(
-  "com.github.cb372" %% "scalacache-core" % "0.23.0",
-  "com.github.cb372" %% "scalacache-circe" % "0.23.0",
-  "com.github.cb372" %% "scalacache-caffeine" % "0.23.0" % Test
+  "com.github.cb372" %% "scalacache-core" % versions.scalacache,
+  "com.github.cb372" %% "scalacache-circe" % versions.scalacache,
+  "com.github.cb372" %% "scalacache-caffeine" % versions.scalacache % Test
 )
 
 lazy val arcus = Seq(
-  "com.navercorp.arcus" % "arcus-java-client" % "1.9.7" excludeAll (
+  "com.navercorp.arcus" % "arcus-java-client" % versions.arcus excludeAll (
     ExclusionRule(organization = "org.slf4j", name = "slf4j-log4j12"),
     ExclusionRule(organization = "log4j", name = "log4j")
   )
 )
 
 lazy val scalaTest = Seq(
-  "org.scalatest" %% "scalatest" % "3.0.4" % Test
+  "org.scalatest" %% "scalatest" % versions.scalatest % Test
 )
 lazy val slf4j = Seq(
-  "org.slf4j" % "slf4j-api" % "1.7.25"
+  "org.slf4j" % "slf4j-api" % versions.slf4j
 )
 
 // Dependencies common to all projects
@@ -44,9 +51,9 @@ lazy val commonSettings =
   Defaults.coreDefaultSettings ++
     mavenSettings ++
     Seq(
-      scalaVersion := "2.12.4",
+      scalaVersion := "2.12.7",
       organization := "com.github.ikhoon",
-      crossScalaVersions := Seq("2.11.11", "2.12.4"),
+      crossScalaVersions := Seq("2.11.11", "2.12.7"),
       scalacOptions ++= Seq(
 //      "-Xfatal-warnings",
         "-deprecation",
@@ -57,8 +64,10 @@ lazy val commonSettings =
         "-language:postfixOps",
         "-language:higherKinds",
         "-language:existentials",
+        "-language:reflectiveCalls",
         "-target:jvm-1.8",
-        "-Xfuture"
+        "-Xfuture",
+        "-Ypartial-unification"
       ),
       resolvers += Resolver.typesafeRepo("releases"),
       libraryDependencies ++= commonDeps,
@@ -119,9 +128,3 @@ lazy val mavenSettings = Seq(
     false
   }
 )
-
-def scala211OnlyDeps(moduleIDs: ModuleID*) =
-  libraryDependencies ++= (scalaBinaryVersion.value match {
-    case "2.11" => moduleIDs
-    case other  => Nil
-  })
