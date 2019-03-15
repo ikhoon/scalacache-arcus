@@ -1,6 +1,7 @@
 import sbtrelease.ReleaseStateTransformations._
 
 import scala.language.postfixOps
+import scala.language.reflectiveCalls
 
 scalafmtOnCompile in ThisBuild := true
 
