@@ -1,12 +1,13 @@
 import sbtrelease.ReleaseStateTransformations._
 
 import scala.language.postfixOps
+import scala.language.reflectiveCalls
 
 scalafmtOnCompile in ThisBuild := true
 
 lazy val versions = new {
   val arcus = "1.9.7"
-  val scalacache = "0.24.3"
+  val scalacache = "0.27.0"
   val logback = "1.1.6"
   val slf4j = "1.7.25"
   val scalatest = "3.0.4"
@@ -51,9 +52,9 @@ lazy val commonSettings =
   Defaults.coreDefaultSettings ++
     mavenSettings ++
     Seq(
-      scalaVersion := "2.12.7",
+      scalaVersion := "2.12.8",
       organization := "com.github.ikhoon",
-      crossScalaVersions := Seq("2.11.11", "2.12.7"),
+      crossScalaVersions := Seq("2.11.11", "2.12.8"),
       scalacOptions ++= Seq(
 //      "-Xfatal-warnings",
         "-deprecation",

@@ -1,15 +1,13 @@
 package scalacache.arcus
 
 import net.spy.memcached._
-import net.spy.memcached.internal.GetFuture
-import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.{Failure, Success, Try}
 import scala.util.control.NonFatal
 import scalacache.serialization.Codec
 import scalacache._
+import scalacache.logging.Logger
 
 /**
   * Wrapper around arcus client
@@ -24,7 +22,7 @@ class ArcusCache[V](client: MemcachedClient,
     extends AbstractCache[V]
     with MemcachedTTLConverter {
 
-  override protected final val logger = LoggerFactory.getLogger(getClass.getName)
+  override protected final val logger = Logger.getLogger(getClass.getName)
 
   override protected def doGet[F[_]](key: String)(implicit mode: Mode[F]): F[Option[V]] = {
     mode.M.async { cb =>
